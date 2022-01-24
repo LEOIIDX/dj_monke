@@ -39,6 +39,12 @@ async def on_ready():
 async def play(ctx):
 	vc = await bot.get_channel(tVoice).connect()
 
+	bigmusiclist = os.listdir("Music")
+	Counter = 0
+	for i in bigmusiclist:
+		if i:
+			Counter += 1
+
 	async def currentlyplaying(check):
 		playStatus = vc.is_playing()
 		while playStatus:
@@ -49,27 +55,13 @@ async def play(ctx):
 		await asyncio.sleep(2)
 
 	async def resetplay(check):
-		# Opening a file
-		file = open("musiclist.txt","r")
-		Counter = 0
-		# Reading from file
-		Content = file.read()
-		music = Content.split("\n")
-		for i in music:
-		    if i:
-		        Counter += 1
-		#Selects the music to be played selecting a random line from text document
-		rand = str(music[random.randint(0,Counter - 1)])
-		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source=rand))
+		rand = random.choice(bigmusiclist)
+		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Music/" + rand))
 		print(str(check))
-
-	await resetplay("reset")
-
-	await currentlyplaying("play")
-
-	await resetplay("reset")
-
-	await currentlyplaying("play2")
+	
+	for x in range(Counter):
+		await resetplay("reset")
+		await currentlyplaying("play")
 
 	await ctx.guild.voice_client.disconnect()
 
