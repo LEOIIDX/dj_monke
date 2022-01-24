@@ -10,6 +10,7 @@ import re
 import asyncio
 import string
 import math
+import music_tag
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -56,5 +57,18 @@ async def play(ctx):
 		playStatus = vc.is_playing()
 
 	await ctx.guild.voice_client.disconnect()
+
+@bot.command()
+async def metadata(ctx):
+	f = music_tag.load_file('Think.flac')
+	art = f['artwork']
+	metaEmbed = discord.Embed(colour = discord.Color.gold())
+
+	metaEmbed.set_author(name=f['title'])
+	metaEmbed.set_image(url='https://i.ibb.co/WzCWqtz/cover.jpg')
+	metaEmbed.add_field(name='Artist', value=f['artist'])
+	metaEmbed.add_field(name='Album', value=f['album'])
+
+	await ctx.channel.send(embed=metaEmbed)
 
 bot.run(TOKEN)
