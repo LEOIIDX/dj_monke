@@ -11,6 +11,7 @@ import asyncio
 import string
 import math
 import music_tag
+import random
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -38,23 +39,37 @@ async def on_ready():
 async def play(ctx):
 	vc = await bot.get_channel(tVoice).connect()
 
-	vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="dogbass.mp3"))
-
-	playStatus = vc.is_playing()
-	while playStatus:
-		await asyncio.sleep(1)
-		print('play')
+	async def currentlyplaying(check):
 		playStatus = vc.is_playing()
+		while playStatus:
+			await asyncio.sleep(1)
+			print(str(check))
+			playStatus = vc.is_playing()
 
-	await asyncio.sleep(2)
+		await asyncio.sleep(2)
 
-	vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Think.flac"))
+	async def resetplay(check):
+		# Opening a file
+		file = open("musiclist.txt","r")
+		Counter = 0
+		# Reading from file
+		Content = file.read()
+		music = Content.split("\n")
+		for i in music:
+		    if i:
+		        Counter += 1
+		#Selects the music to be played selecting a random line from text document
+		rand = str(music[random.randint(0,Counter - 1)])
+		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source=rand))
+		print(str(check))
 
-	playStatus = vc.is_playing()
-	while playStatus:
-		await asyncio.sleep(1)
-		print('coom')
-		playStatus = vc.is_playing()
+	await resetplay("reset")
+
+	await currentlyplaying("play")
+
+	await resetplay("reset")
+
+	await currentlyplaying("play2")
 
 	await ctx.guild.voice_client.disconnect()
 
