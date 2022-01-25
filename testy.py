@@ -1,20 +1,12 @@
-from mutagen.flac import FLAC, Picture
-from mutagen import File
-from mutagen.id3 import ID3
+import cv2 #pip install opencv-python
+import numpy
 
-current = "Music/Think.flac"
-
-print(current[-3:])
-if current[-3:] == "mp3":
-	music = ID3(current)  
-	with open("Metadata/cover.jpg", "wb") as f:
-		f.write(music.getall("APIC")[0].data)
-else:
-	var = FLAC(current)
-	pics = var.pictures
-	print (pics)
-	for p in pics:
-		if p.type == 3: #front cover
-			print("\nfound front cover") 
-			with open("Metadata/cover.jpg", "wb") as f:
-				f.write(p.data)
+myimg = cv2.imread("Metadata/cover.png")
+avg_color_per_row = numpy.average(myimg, axis=0)
+avg_color = numpy.average(avg_color_per_row, axis=0)
+red = avg_color[2]
+green = avg_color[1]
+blue = avg_color[0]
+print("Red " + str(red))
+print("Green " + str(green))
+print("Blue " + str(blue))

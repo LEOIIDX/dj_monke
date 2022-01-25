@@ -12,9 +12,13 @@ import string
 import math
 import music_tag
 import random
+
+#For metadata command
 from mutagen.flac import FLAC, Picture
 from mutagen import File
 from mutagen.id3 import ID3
+import cv2 #pip install opencv-python
+import numpy
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -91,13 +95,22 @@ async def metadata(ctx):
 
 	file = discord.File("Metadata/cover.png", filename="cover.png")
 
-	metaEmbed = discord.Embed(colour = discord.Color.gold())
+	#find the average color of the album art to use as embed color
+	myimg = cv2.imread("Metadata/cover.png")
+	avg_color_per_row = numpy.average(myimg, axis=0)
+	avg_color = numpy.average(avg_color_per_row, axis=0)
+	red = int(avg_color[2])
+	green = int(avg_color[1])
+	blue = int(avg_color[0])
+
+	metaEmbed = discord.Embed(colour = discord.Color.from_rgb(red, green, blue))
 	metaEmbed.set_author(name=track['title'])
 	metaEmbed.add_field(name='Artist', value=track['artist'])
 	metaEmbed.add_field(name='Album', value=track['album'])
 	metaEmbed.set_image(url="attachment://cover.png")
 
 	await ctx.channel.send(file=file, embed=metaEmbed)
+	return
 
 @bot.command()
 async def stop(ctx):
@@ -109,13 +122,6 @@ async def stop(ctx):
   		os.remove("currentlyplaying.txt")
 	if os.path.exists("currentlyplaying.txt"):
   		os.remove("currentlyplaying.txt")
-	exit()
-
-@bot.command()
-async def testembed(ctx):
-	embed = discord.Embed(title="Test", description="xxxx", color=0x00ff00) #creates embed
-	file = discord.File("Metadata/cover.png", filename="cover.png")
-	embed.set_image(url="attachment://cover.png")
-	await ctx.send(file=file, embed=embed)
+	return
 
 bot.run(TOKEN)
