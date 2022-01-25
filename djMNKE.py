@@ -74,14 +74,11 @@ async def metadata(ctx):
 	with open("Metadata/currentlyplaying.txt", "r", encoding="utf8") as f:
 		current = f.readlines()
 	f = music_tag.load_file(str(current[0]))
-	artwork = f.tags['APIC:'].data
-	with open('image.jpg', 'wb') as img:
-   		img.write(artwork)
 	art = f['artwork']
 	metaEmbed = discord.Embed(colour = discord.Color.gold())
 
 	metaEmbed.set_author(name=f['title'])
-	metaEmbed.set_image(image = artwork)
+	metaEmbed.set_image(url='https://i.ibb.co/WzCWqtz/cover.jpg')
 	metaEmbed.add_field(name='Artist', value=f['artist'])
 	metaEmbed.add_field(name='Album', value=f['album'])
 
