@@ -77,7 +77,7 @@ async def play(ctx):
 			f.write("Music/" + rand)
 		print(str(check))
 	
-	#Play all songs until every song in the list from the Music folder is picked, then the bot leaves
+	#Play all songs until every song in the list from the Music folder is picked (know from counter), then the bot leaves
 	for x in range(Counter):
 		rand = random.choice(bigmusiclist)
 		await resetplay("reset")
@@ -129,7 +129,7 @@ async def metadata(ctx):
 	await ctx.channel.send(file=file, embed=metaEmbed)
 
 @bot.command()
-async def stop(ctx): #This command will throw out a bunch of errors, too bad!
+async def stop(ctx): #This command will throw out a bunch of errors, too bad! :)
 	if ctx.voice_client: # If the bot is in a voice channel 
 		await endbot(ctx) # Leave the channel
 	else:
