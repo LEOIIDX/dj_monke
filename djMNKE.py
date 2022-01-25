@@ -51,6 +51,8 @@ async def endbot(ctx): #exits and cleans up after bot is done or forcibly exited
   		os.remove("Metadata/currentlyplaying.txt")
 	if os.path.exists("Metadata/cover.png"):
   		os.remove("Metadata/cover.png")
+
+	await bot.change_presence(status=discord.Status.online, activity=discord.Game('Nothing'))
 	await ctx.guild.voice_client.disconnect()
 
 
@@ -134,6 +136,8 @@ async def metadata():
 	metaEmbed.set_image(url="attachment://cover.png")
 
 	await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
+
+	await bot.change_presence(status=discord.Status.online, activity=discord.Game(str(track['title']) + ' - ' + str(track['artist'])))
 
 @bot.event
 async def on_ready():
