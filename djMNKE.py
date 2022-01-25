@@ -55,13 +55,14 @@ async def play(ctx):
 		await asyncio.sleep(2)
 
 	async def resetplay(check):
-		rand = random.choice(bigmusiclist)
 		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Music/" + rand))
 		print(str(check))
 	
 	for x in range(Counter):
+		rand = random.choice(bigmusiclist)
 		await resetplay("reset")
 		await currentlyplaying("play")
+		bigmusiclist.remove(rand)
 
 	await ctx.guild.voice_client.disconnect()
 
