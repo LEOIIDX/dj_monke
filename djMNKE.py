@@ -82,8 +82,8 @@ async def player():
 		os.system('cp cover.png Metadata/cover.png')
 		await metadata()
 		print(str(check))
-
-	#Play all songs until every song in the list from the Music folder is picked, then the bot leaves
+	
+	#Play all songs until every song in the list from the Music folder is picked (know from counter), then the bot leaves
 	for x in range(Counter):
 		rand = random.choice(bigmusiclist)
 		await resetplay("reset")
