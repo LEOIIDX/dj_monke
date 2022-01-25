@@ -88,15 +88,19 @@ async def play(ctx):
 
 @bot.command()
 async def metadata(ctx):
+	#Find what is currently playing
 	with open("Metadata/currentlyplaying.txt", "r", encoding="utf8") as f:
 		current = f.readlines()
 	track = music_tag.load_file(str(current[0]))
 	trackstring = str(current[0])
-	if trackstring[-3:] == "mp3":
+
+	#Determine if mp3 or flac and extract album art into Metadata folder
+	#This also means only mp3 and flac are support unless you want to manually find other methods
+	if trackstring[-3:] == "mp3": #mp3
 		music = ID3(trackstring)  
 		with open("Metadata/cover.png", "wb") as f:
 			f.write(music.getall("APIC")[0].data)
-	else:
+	else: #flac
 		var = FLAC(trackstring)
 		pics = var.pictures
 		for p in pics:
@@ -104,6 +108,7 @@ async def metadata(ctx):
 				with open("Metadata/cover.png", "wb") as f:
 					f.write(p.data)
 
+	#Used for embed cover art
 	file = discord.File("Metadata/cover.png", filename="cover.png")
 
 	#find the average color of the album art to use as embed color
@@ -114,6 +119,7 @@ async def metadata(ctx):
 	green = int(avg_color[1])
 	blue = int(avg_color[0])
 
+	#Discord embed that is sent
 	metaEmbed = discord.Embed(colour = discord.Color.from_rgb(red, green, blue))
 	metaEmbed.set_author(name=track['title'])
 	metaEmbed.add_field(name='Artist', value=track['artist'])
@@ -128,5 +134,13 @@ async def stop(ctx): #This command will throw out a bunch of errors, too bad!
 		await endbot(ctx) # Leave the channel
 	else:
 		await ctx.send("I'm not in a voice channel yet")
+
+#this is a placeholder, I have no idea how to make a skip function with current setup
+@bot.command()
+async def skip(ctx):
+	if ctx.voice_client: # If the bot is in a voice channel 
+		await endbot(ctx) # Leave the channel
+	else:
+		await ctx.send("I'm not in a voice channel yet")	
 
 bot.run(TOKEN)
