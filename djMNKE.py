@@ -12,7 +12,9 @@ import string
 import math
 import music_tag
 import random
+from mutagen.flac import FLAC, Picture
 from mutagen import File
+from mutagen.id3 import ID3
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -73,16 +75,29 @@ async def play(ctx):
 async def metadata(ctx):
 	with open("Metadata/currentlyplaying.txt", "r", encoding="utf8") as f:
 		current = f.readlines()
-	f = music_tag.load_file(str(current[0]))
-	art = f['artwork']
+	track = music_tag.load_file(str(current[0]))
+	trackstring = str(current[0])
+	if trackstring[-3:] == "mp3":
+		music = ID3(trackstring)  
+		with open("Metadata/cover.png", "wb") as f:
+			f.write(music.getall("APIC")[0].data)
+	else:
+		var = FLAC(trackstring)
+		pics = var.pictures
+		for p in pics:
+			if p.type == 3: #front cover
+				with open("Metadata/cover.png", "wb") as f:
+					f.write(p.data)
+
+	file = discord.File("Metadata/cover.png", filename="cover.png")
+
 	metaEmbed = discord.Embed(colour = discord.Color.gold())
+	metaEmbed.set_author(name=track['title'])
+	metaEmbed.add_field(name='Artist', value=track['artist'])
+	metaEmbed.add_field(name='Album', value=track['album'])
+	metaEmbed.set_image(url="attachment://cover.png")
 
-	metaEmbed.set_author(name=f['title'])
-	metaEmbed.set_image(url='https://i.ibb.co/WzCWqtz/cover.jpg')
-	metaEmbed.add_field(name='Artist', value=f['artist'])
-	metaEmbed.add_field(name='Album', value=f['album'])
-
-	await ctx.channel.send(embed=metaEmbed)
+	await ctx.channel.send(file=file, embed=metaEmbed)
 
 @bot.command()
 async def stop(ctx):
@@ -95,5 +110,12 @@ async def stop(ctx):
 	if os.path.exists("currentlyplaying.txt"):
   		os.remove("currentlyplaying.txt")
 	exit()
+
+@bot.command()
+async def testembed(ctx):
+	embed = discord.Embed(title="Test", description="xxxx", color=0x00ff00) #creates embed
+	file = discord.File("Metadata/cover.png", filename="cover.png")
+	embed.set_image(url="attachment://cover.png")
+	await ctx.send(file=file, embed=embed)
 
 bot.run(TOKEN)
