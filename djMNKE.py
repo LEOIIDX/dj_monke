@@ -12,6 +12,7 @@ import string
 import math
 import music_tag
 import random
+from mutagen import File
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -56,6 +57,8 @@ async def play(ctx):
 
 	async def resetplay(check):
 		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Music/" + rand))
+		with open("Metadata/currentlyplaying.txt", "w", encoding="utf8") as f: 
+			f.write("Music/" + rand)
 		print(str(check))
 	
 	for x in range(Counter):
@@ -68,12 +71,17 @@ async def play(ctx):
 
 @bot.command()
 async def metadata(ctx):
-	f = music_tag.load_file('Think.flac')
+	with open("Metadata/currentlyplaying.txt", "r", encoding="utf8") as f:
+		current = f.readlines()
+	f = music_tag.load_file(str(current[0]))
+	artwork = f.tags['APIC:'].data
+	with open('image.jpg', 'wb') as img:
+   		img.write(artwork)
 	art = f['artwork']
 	metaEmbed = discord.Embed(colour = discord.Color.gold())
 
 	metaEmbed.set_author(name=f['title'])
-	metaEmbed.set_image(url='https://i.ibb.co/WzCWqtz/cover.jpg')
+	metaEmbed.set_image(image = artwork)
 	metaEmbed.add_field(name='Artist', value=f['artist'])
 	metaEmbed.add_field(name='Album', value=f['album'])
 
@@ -85,6 +93,10 @@ async def stop(ctx):
 		await ctx.guild.voice_client.disconnect() # Leave the channel
 	else:
 		await ctx.send("I'm not in a voice channel yet")
+	if os.path.exists("currentlyplaying.txt"):
+  		os.remove("currentlyplaying.txt")
+	if os.path.exists("currentlyplaying.txt"):
+  		os.remove("currentlyplaying.txt")
 	exit()
 
 bot.run(TOKEN)
