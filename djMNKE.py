@@ -1,8 +1,15 @@
 '''
-DJMNKE.py
+djMNKE.py
 By: Nanahira Monke Kanade Dev
 
 Internet Radio Stream Bot
+
+TODO List
+#TODO Make a Skip function
+#TODO Create a base playlist (ill take care of that - leo)
+#TODO See if there is a better way to format the metadata embed (see Line 126)
+#TODO Create a request functionality (might be a hairpuller, im personally fine without - leo)
+#
 '''
 import os
 import discord
@@ -17,7 +24,7 @@ import random
 from mutagen.flac import FLAC, Picture
 from mutagen import File
 from mutagen.id3 import ID3
-import cv2 #pip install opencv-python
+import cv2 #*pip install opencv-python
 import numpy
 
 from discord.ext import commands
@@ -37,6 +44,7 @@ print('DJ Monke Bot\n')
 bot = commands.Bot(command_prefix='mn!',intents=intents)
 
 tVoice = 828667775605669893
+metaOut = 841586692640735242
 
 async def endbot(ctx): #exits and cleans up after bot is done or forcibly exited
 	if os.path.exists("Metadata/currentlyplaying.txt"):
@@ -44,13 +52,9 @@ async def endbot(ctx): #exits and cleans up after bot is done or forcibly exited
 	if os.path.exists("Metadata/cover.png"):
   		os.remove("Metadata/cover.png")
 	await ctx.guild.voice_client.disconnect()
-		  	
-@bot.event
-async def on_ready():
-	print('Ready!')
 
-@bot.command()
-async def play(ctx):
+
+async def player():
 	vc = await bot.get_channel(tVoice).connect()
 
 	#Counts the amount of files in the Music directory
@@ -75,8 +79,10 @@ async def play(ctx):
 		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Music/" + rand))
 		with open("Metadata/currentlyplaying.txt", "w", encoding="utf8") as f: 
 			f.write("Music/" + rand)
+		os.system('cp cover.png Metadata/cover.png')
+		await metadata()
 		print(str(check))
-	
+
 	#Play all songs until every song in the list from the Music folder is picked, then the bot leaves
 	for x in range(Counter):
 		rand = random.choice(bigmusiclist)
@@ -86,8 +92,7 @@ async def play(ctx):
 
 	await endbot(ctx)
 
-@bot.command()
-async def metadata(ctx):
+async def metadata():
 	#Find what is currently playing
 	with open("Metadata/currentlyplaying.txt", "r", encoding="utf8") as f:
 		current = f.readlines()
@@ -96,6 +101,7 @@ async def metadata(ctx):
 
 	#Determine if mp3 or flac and extract album art into Metadata folder
 	#This also means only mp3 and flac are support unless you want to manually find other methods
+	#haha nope - leo
 	if trackstring[-3:] == "mp3": #mp3
 		music = ID3(trackstring)  
 		with open("Metadata/cover.png", "wb") as f:
@@ -120,16 +126,27 @@ async def metadata(ctx):
 	blue = int(avg_color[0])
 
 	#Discord embed that is sent
+	#? Im not sure about the formatting of the embed. I want to see if we can make it better. - leo
 	metaEmbed = discord.Embed(colour = discord.Color.from_rgb(red, green, blue))
 	metaEmbed.set_author(name=track['title'])
 	metaEmbed.add_field(name='Artist', value=track['artist'])
 	metaEmbed.add_field(name='Album', value=track['album'])
 	metaEmbed.set_image(url="attachment://cover.png")
 
-	await ctx.channel.send(file=file, embed=metaEmbed)
+	await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
+
+@bot.event
+async def on_ready():
+	print('Ready!')
+	os.system('cp cover.png Metadata/cover.png')
+	await player()
 
 @bot.command()
-async def stop(ctx): #This command will throw out a bunch of errors, too bad!
+async def play(ctx): #Allows the above on_ready call to be used on command (like if you do mn!stop)
+	await player()
+
+@bot.command()
+async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
 	if ctx.voice_client: # If the bot is in a voice channel 
 		await endbot(ctx) # Leave the channel
 	else:
@@ -141,6 +158,6 @@ async def skip(ctx):
 	if ctx.voice_client: # If the bot is in a voice channel 
 		await endbot(ctx) # Leave the channel
 	else:
-		await ctx.send("I'm not in a voice channel yet")	
+		await ctx.send("I'm not in a voice channel yet")
 
 bot.run(TOKEN)
