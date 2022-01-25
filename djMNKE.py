@@ -79,4 +79,12 @@ async def metadata(ctx):
 
 	await ctx.channel.send(embed=metaEmbed)
 
+@bot.command()
+async def stop(ctx):
+	if ctx.voice_client: # If the bot is in a voice channel 
+		await ctx.guild.voice_client.disconnect() # Leave the channel
+	else:
+		await ctx.send("I'm not in a voice channel yet")
+	exit()
+
 bot.run(TOKEN)
