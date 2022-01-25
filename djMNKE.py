@@ -38,6 +38,13 @@ bot = commands.Bot(command_prefix='mn!',intents=intents)
 
 tVoice = 828667775605669893
 
+async def endbot(ctx): #exits and cleans up after bot is done or forcibly exited
+	if os.path.exists("Metadata/currentlyplaying.txt"):
+  		os.remove("Metadata/currentlyplaying.txt")
+	if os.path.exists("Metadata/cover.png"):
+  		os.remove("Metadata/cover.png")
+	await ctx.guild.voice_client.disconnect()
+		  	
 @bot.event
 async def on_ready():
 	print('Ready!')
@@ -46,12 +53,14 @@ async def on_ready():
 async def play(ctx):
 	vc = await bot.get_channel(tVoice).connect()
 
+	#Counts the amount of files in the Music directory
 	bigmusiclist = os.listdir("Music")
 	Counter = 0
 	for i in bigmusiclist:
 		if i:
 			Counter += 1
 
+	#What plays the music
 	async def currentlyplaying(check):
 		playStatus = vc.is_playing()
 		while playStatus:
@@ -61,19 +70,21 @@ async def play(ctx):
 
 		await asyncio.sleep(2)
 
+	#How the next track is picked and played
 	async def resetplay(check):
 		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Music/" + rand))
 		with open("Metadata/currentlyplaying.txt", "w", encoding="utf8") as f: 
 			f.write("Music/" + rand)
 		print(str(check))
 	
+	#Play all songs until every song in the list from the Music folder is picked, then the bot leaves
 	for x in range(Counter):
 		rand = random.choice(bigmusiclist)
 		await resetplay("reset")
 		await currentlyplaying("play")
 		bigmusiclist.remove(rand)
 
-	await ctx.guild.voice_client.disconnect()
+	await endbot(ctx)
 
 @bot.command()
 async def metadata(ctx):
@@ -110,18 +121,12 @@ async def metadata(ctx):
 	metaEmbed.set_image(url="attachment://cover.png")
 
 	await ctx.channel.send(file=file, embed=metaEmbed)
-	return
 
 @bot.command()
-async def stop(ctx):
+async def stop(ctx): #This command will throw out a bunch of errors, too bad!
 	if ctx.voice_client: # If the bot is in a voice channel 
-		await ctx.guild.voice_client.disconnect() # Leave the channel
+		await endbot(ctx) # Leave the channel
 	else:
 		await ctx.send("I'm not in a voice channel yet")
-	if os.path.exists("currentlyplaying.txt"):
-  		os.remove("currentlyplaying.txt")
-	if os.path.exists("currentlyplaying.txt"):
-  		os.remove("currentlyplaying.txt")
-	return
 
 bot.run(TOKEN)
