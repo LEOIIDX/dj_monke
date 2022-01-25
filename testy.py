@@ -1,13 +1,20 @@
-import os,sys
-from io import BytesIO
-from mutagen.mp3 import MP3
+from mutagen.flac import FLAC, Picture
+from mutagen import File
 from mutagen.id3 import ID3
 
-song_path = os.path.join(sys.argv[0])
-track = MP3("Music/dogbass.mp3")
-tags = ID3("Music/dogbass.mp3")
-print("ID3 tags included in this song ------------------")
-print(tags.pprint())
-print("-------------------------------------------------")
-pict = tags.get("APIC")
-print(pict)
+song = "Music/dogbass.mp3"
+
+print(song[-3:])
+if song[-3:] == "mp3":
+	music = ID3(song)  
+	with open("Metadata/cover.jpg", "wb") as f:
+		f.write(music.getall("APIC")[0].data)
+else:
+	var = FLAC(song)
+	pics = var.pictures
+	print (pics)
+	for p in pics:
+		if p.type == 3: #front cover
+			print("\nfound front cover") 
+			with open("Metadata/cover.jpg", "wb") as f:
+				f.write(p.data)
