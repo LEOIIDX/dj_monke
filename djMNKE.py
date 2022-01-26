@@ -21,9 +21,11 @@ import music_tag
 import random
 
 #For metadata command
-from mutagen.flac import FLAC, Picture
-from mutagen import File
+from mutagen.flac import FLAC
 from mutagen.id3 import ID3
+from tinytag import TinyTag
+import datetime
+
 import cv2 #*pip install opencv-python
 import numpy
 
@@ -108,6 +110,7 @@ async def metadata():
 		music = ID3(trackstring)  
 		with open("Metadata/cover.png", "wb") as f:
 			f.write(music.getall("APIC")[0].data)
+		musictype = "mp3"
 	else: #flac
 		var = FLAC(trackstring)
 		pics = var.pictures
@@ -115,9 +118,7 @@ async def metadata():
 			if p.type == 3: #front cover
 				with open("Metadata/cover.png", "wb") as f:
 					f.write(p.data)
-
-	#Used for embed cover art
-	file = discord.File("Metadata/cover.png", filename="cover.png")
+		musictype = "FLAC"
 
 	#find the average color of the album art to use as embed color
 	myimg = cv2.imread("Metadata/cover.png")
@@ -127,15 +128,32 @@ async def metadata():
 	green = int(avg_color[1])
 	blue = int(avg_color[0])
 
-	#Discord embed that is sent
-	#? Im not sure about the formatting of the embed. I want to see if we can make it better. - leo
-	metaEmbed = discord.Embed(colour = discord.Color.from_rgb(red, green, blue))
-	metaEmbed.set_author(name=track['title'])
-	metaEmbed.add_field(name='Artist', value=track['artist'])
-	metaEmbed.add_field(name='Album', value=track['album'])
-	metaEmbed.set_image(url="attachment://cover.png")
+	#* Discord embed that is sent
+	track = music_tag.load_file(str(current[0]))
+	tag = TinyTag.get(str(current[0]))
+
+	#? New random phrase list? Just using a few from iidx bot command right now -zep
+	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "IIDX OF THE NEW CENTURY", "THE PRIMARY VIVID IIDX", "JEWEL SHOWER", "Break the Future", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!", "Blaze through the resort party!"]
+
+	metaEmbed = discord.Embed(title=tag.title, description=tag.artist, color= discord.Color.from_rgb(red, green, blue))
+	metaEmbed.set_author(name="\"" + random.choice(TitleList) + "\"", icon_url="https://i.imgur.com/4T55IR4.png")
+	file = discord.File("Metadata/cover.png", filename="cover.png")
+	metaEmbed.set_thumbnail(url="attachment://cover.png")
+	metaEmbed.set_footer(text=tag.album + "\n" +  str(tag.samplerate) + "Hz | " + str(int(tag.bitrate)) + " kbps | " + musictype)
 
 	await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
+
+	#! Discord embed that is sent (old)
+	#? Im not sure about the formatting of the embed. I want to see if we can make it better. - leo
+
+	#file = discord.File("Metadata/cover.png", filename="cover.png")
+	#metaEmbed = discord.Embed(colour = discord.Color.from_rgb(red, green, blue))
+	#metaEmbed.set_author(name=track['title'])
+	#metaEmbed.add_field(name='Artist', value=track['artist'])
+	#metaEmbed.add_field(name='Album', value=track['album'])
+	#metaEmbed.set_image(url="attachment://cover.png")
+
+	#await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
 
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game(str(track['title']) + ' - ' + str(track['artist'])))
 
@@ -148,6 +166,10 @@ async def on_ready():
 @bot.command()
 async def play(ctx): #Allows the above on_ready call to be used on command (like if you do mn!stop)
 	await player()
+
+@bot.command()
+async def metadata(ctx):
+	await metadata()
 
 @bot.command()
 async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
@@ -163,5 +185,27 @@ async def skip(ctx):
 		await endbot(ctx) # Leave the channel
 	else:
 		await ctx.send("I'm not in a voice channel yet")
+
+
+#* Just used to test embed
+@bot.command()
+async def embed(ctx):
+
+	track = music_tag.load_file("Music/06 - RAM - ACT.flac")
+	tag = TinyTag.get("Music/06 - RAM - ACT.flac")
+
+	red = 100
+	green = 100
+	blue = 100
+
+	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!"]
+
+	metaEmbed = discord.Embed(title=tag.title, description=tag.artist, color= discord.Color.from_rgb(red, green, blue))
+	metaEmbed.set_author(name=random.choice(TitleList), icon_url="https://i.imgur.com/4T55IR4.png")
+	file = discord.File("Metadata/cover.png", filename="cover.png")
+	metaEmbed.set_thumbnail(url="attachment://cover.png")
+	metaEmbed.set_footer(text=tag.album + "\n" +  str(tag.samplerate) + "Hz | " + str(int(tag.bitrate)) + " kbps | " + musictype)
+
+	await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
 
 bot.run(TOKEN)

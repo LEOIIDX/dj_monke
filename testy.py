@@ -1,12 +1,7 @@
-import cv2 #pip install opencv-python
-import numpy
+from tinytag import TinyTag
+import music_tag
 
-myimg = cv2.imread("Metadata/cover.png")
-avg_color_per_row = numpy.average(myimg, axis=0)
-avg_color = numpy.average(avg_color_per_row, axis=0)
-red = avg_color[2]
-green = avg_color[1]
-blue = avg_color[0]
-print("Red " + str(red))
-print("Green " + str(green))
-print("Blue " + str(blue))
+track = music_tag.load_file("Music/06 - RAM - ACT.flac")
+tag = TinyTag.get("Music/06 - RAM - ACT.flac", image = True)
+print('This track is by %s.' % tag.artist)
+print('It is %f seconds long.' % tag.duration)
