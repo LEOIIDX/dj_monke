@@ -19,6 +19,7 @@ import string
 import math
 import music_tag
 import random
+import sys
 
 #For metadata command
 from mutagen.flac import FLAC
@@ -48,17 +49,19 @@ bot = commands.Bot(command_prefix='mn!',intents=intents)
 tVoice = 828667775605669893
 metaOut = 841586692640735242
 
-async def endbot(ctx): #exits and cleans up after bot is done or forcibly exited
+async def endbot(channel): #exits and cleans up after bot is done or forcibly exited
 	if os.path.exists("Metadata/currentlyplaying.txt"):
   		os.remove("Metadata/currentlyplaying.txt")
 	if os.path.exists("Metadata/cover.png"):
   		os.remove("Metadata/cover.png")
 
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game('Nothing'))
-	await ctx.guild.voice_client.disconnect()
+	await channel.disconnect()
 
+	await player()
 
 async def player():
+	global vc
 	vc = await bot.get_channel(tVoice).connect()
 
 	#Counts the amount of files in the Music directory
@@ -94,7 +97,7 @@ async def player():
 		await currentlyplaying("play")
 		bigmusiclist.remove(rand)
 
-	await endbot(ctx)
+	await endbot(vc)
 
 async def metadata():
 	#Find what is currently playing
@@ -159,9 +162,10 @@ async def metadata():
 
 @bot.event
 async def on_ready():
+	global stopStatus
+	stopStatus = 0
 	print('Ready!')
 	os.system('cp cover.png Metadata/cover.png')
-	await player()
 
 @bot.command()
 async def play(ctx): #Allows the above on_ready call to be used on command (like if you do mn!stop)
@@ -173,8 +177,14 @@ async def info(ctx):
 
 @bot.command()
 async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
-	if ctx.voice_client: # If the bot is in a voice channel 
-		await endbot(ctx) # Leave the channel
+	if ctx.voice_client: # If the bot is in a voice channel
+		if os.path.exists("Metadata/currentlyplaying.txt"):
+	  		os.remove("Metadata/currentlyplaying.txt")
+		if os.path.exists("Metadata/cover.png"):
+	  		os.remove("Metadata/cover.png")
+		await ctx.voice_client.disconnect()
+		os.system("clear")
+		os.execv(sys.executable, ['python'] + sys.argv)
 	else:
 		await ctx.send("I'm not in a voice channel yet")
 
