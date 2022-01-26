@@ -168,7 +168,7 @@ async def play(ctx): #Allows the above on_ready call to be used on command (like
 	await player()
 
 @bot.command()
-async def metadata(ctx):
+async def info(ctx):
 	await metadata()
 
 @bot.command()
