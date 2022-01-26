@@ -197,6 +197,7 @@ async def embed(ctx):
 	red = 100
 	green = 100
 	blue = 100
+	musictype = "FLAC"
 
 	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!"]
 
