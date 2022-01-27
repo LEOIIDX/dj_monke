@@ -5,11 +5,8 @@ By: Nanahira Monke Kanade Dev
 Internet Radio Stream Bot
 
 TODO List
-#TODO Make a Skip function
 #TODO Create a base playlist (ill take care of that - leo)
-#TODO See if there is a better way to format the metadata embed (see Line 126)
-#TODO Create a request functionality (might be a hairpuller, im personally fine without - leo)
-#
+#TODO Create a debug functionality
 '''
 import os
 import discord
@@ -46,10 +43,12 @@ print('DJ Monke Bot\n')
 
 bot = commands.Bot(command_prefix='mn!',intents=intents)
 
-tVoice = 828667775605669893
-metaOut = 841586692640735242
+bot.remove_command('help')
 
-async def endbot(channel): #exits and cleans up after bot is done or forcibly exited
+metaOut_TEST = 841586692640735242
+metaOut = 936204500434296883
+
+async def endbot(): #exits and cleans up after bot is done or forcibly exited
 	if os.path.exists("Metadata/currentlyplaying.txt"):
   		os.remove("Metadata/currentlyplaying.txt")
 	if os.path.exists("Metadata/cover.png"):
@@ -61,8 +60,7 @@ async def endbot(channel): #exits and cleans up after bot is done or forcibly ex
 	await player()
 
 async def player():
-	global vc
-	vc = await bot.get_channel(tVoice).connect()
+	vc = await bot.get_channel(targetVoice).connect()
 
 	#Counts the amount of files in the Music directory
 	bigmusiclist = os.listdir("Music")
@@ -76,7 +74,6 @@ async def player():
 		playStatus = vc.is_playing()
 		while playStatus:
 			await asyncio.sleep(1)
-			print(str(check))
 			playStatus = vc.is_playing()
 
 		await asyncio.sleep(2)
@@ -88,7 +85,6 @@ async def player():
 			f.write("Music/" + rand)
 		os.system('cp cover.png Metadata/cover.png')
 		await metadata()
-		print(str(check))
 	
 	#Play all songs until every song in the list from the Music folder is picked (know from counter), then the bot leaves
 	for x in range(Counter):
@@ -136,7 +132,7 @@ async def metadata():
 	tag = TinyTag.get(str(current[0]))
 
 	#? New random phrase list? Just using a few from iidx bot command right now -zep
-	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "IIDX OF THE NEW CENTURY", "THE PRIMARY VIVID IIDX", "JEWEL SHOWER", "Break the Future", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!", "Blaze through the resort party!"]
+	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "IIDX OF THE NEW CENTURY", "THE PRIMARY VIVID IIDX", "JEWEL SHOWER", "Break the Future", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!", "Blaze through the resort party!", "FEAR THE SAFARI", "Your mom calls me an animal."]
 
 	metaEmbed = discord.Embed(title=tag.title, description=tag.artist, color= discord.Color.from_rgb(red, green, blue))
 	metaEmbed.set_author(name="\"" + random.choice(TitleList) + "\"", icon_url="https://i.imgur.com/4T55IR4.png")
@@ -145,18 +141,6 @@ async def metadata():
 	metaEmbed.set_footer(text=tag.album + "\n" +  str(tag.samplerate) + "Hz | " + str(int(tag.bitrate)) + " kbps | " + musictype)
 
 	await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
-
-	#! Discord embed that is sent (old)
-	#? Im not sure about the formatting of the embed. I want to see if we can make it better. - leo
-
-	#file = discord.File("Metadata/cover.png", filename="cover.png")
-	#metaEmbed = discord.Embed(colour = discord.Color.from_rgb(red, green, blue))
-	#metaEmbed.set_author(name=track['title'])
-	#metaEmbed.add_field(name='Artist', value=track['artist'])
-	#metaEmbed.add_field(name='Album', value=track['album'])
-	#metaEmbed.set_image(url="attachment://cover.png")
-
-	#await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
 
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game(str(track['title']) + ' - ' + str(track['artist'])))
 
@@ -168,14 +152,21 @@ async def on_ready():
 	os.system('cp cover.png Metadata/cover.png')
 
 @bot.command()
+@commands.has_any_role('Admin', 'Mod', 'DJ')
 async def play(ctx): #Allows the above on_ready call to be used on command (like if you do mn!stop)
-	await player()
+	global targetVoice
+	if not ctx.author.voice:
+		await ctx.channel.send('Please join a Voice Channel.')
+	else:
+		targetVoice = ctx.author.voice.channel.id
+		await player()
 
 @bot.command()
 async def info(ctx):
 	await metadata()
 
 @bot.command()
+@commands.has_any_role('Admin', 'Mod', 'DJ')
 async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
 	if ctx.voice_client: # If the bot is in a voice channel
 		if os.path.exists("Metadata/currentlyplaying.txt"):
@@ -191,32 +182,19 @@ async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
 #this is a placeholder, I have no idea how to make a skip function with current setup
 @bot.command()
 async def skip(ctx):
-	if ctx.voice_client: # If the bot is in a voice channel 
-		await endbot(ctx) # Leave the channel
-	else:
-		await ctx.send("I'm not in a voice channel yet")
+	await ctx.channel.send('I dont do anything yet haha')
 
-
-#* Just used to test embed
 @bot.command()
-async def embed(ctx):
+async def help(ctx):
+	helpEmbed = discord.Embed()
+	file = discord.File('cover.png', filename='cover.png')
 
-	track = music_tag.load_file("Music/06 - RAM - ACT.flac")
-	tag = TinyTag.get("Music/06 - RAM - ACT.flac")
+	helpEmbed.set_author(name='DJ MONKE Help')
+	helpEmbed.set_thumbnail(url='attachment://cover.png')
+	helpEmbed.add_field(name='play', value='mn!play || Starts playback (Only available to DJ role)', inline=False)
+	helpEmbed.add_field(name='stop', value='mn!stop || Stops playback (Only available to DJ role)', inline=False)
+	helpEmbed.add_field(name='info', value='mn!info || Prints out the metadata of the current track', inline=False)
 
-	red = 100
-	green = 100
-	blue = 100
-	musictype = "FLAC"
-
-	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!"]
-
-	metaEmbed = discord.Embed(title=tag.title, description=tag.artist, color= discord.Color.from_rgb(red, green, blue))
-	metaEmbed.set_author(name=random.choice(TitleList), icon_url="https://i.imgur.com/4T55IR4.png")
-	file = discord.File("Metadata/cover.png", filename="cover.png")
-	metaEmbed.set_thumbnail(url="attachment://cover.png")
-	metaEmbed.set_footer(text=tag.album + "\n" +  str(tag.samplerate) + "Hz | " + str(int(tag.bitrate)) + " kbps | " + musictype)
-
-	await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
+	await ctx.channel.send(file=file, embed = helpEmbed)
 
 bot.run(TOKEN)
