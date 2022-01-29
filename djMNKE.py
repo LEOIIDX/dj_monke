@@ -140,7 +140,7 @@ async def metadata():
 	metaEmbed.set_thumbnail(url="attachment://cover.png")
 	metaEmbed.set_footer(text=tag.album + "\n" +  str(tag.samplerate) + "Hz | " + str(int(tag.bitrate)) + " kbps | " + musictype)
 
-	await bot.get_channel(841586692640735242).send(file=file, embed=metaEmbed)
+	await bot.get_channel(metaOut).send(file=file, embed=metaEmbed)
 
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game(str(track['title']) + ' - ' + str(track['artist'])))
 
