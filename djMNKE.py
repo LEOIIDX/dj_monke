@@ -45,10 +45,10 @@ print('DJ Monke Bot\n')
 
 mode = input('Select Mode\n(0) Normal\n(1) Debug\n')
 
-if mode == 0:
-	bot = commands.Bot(command_prefix='mn!',intents=intents)
-else:
+if int(mode) >= 1:
 	bot = commands.Bot(command_prefix='mnt!',intents=intents)
+else:
+	bot = commands.Bot(command_prefix='mn!',intents=intents)
 
 bot.remove_command('help')
 
