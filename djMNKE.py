@@ -109,7 +109,7 @@ async def player():
 		await currentlyplaying("play")
 		bigmusiclist.remove(rand)
 
-	if mode == 1:
+	if int(mode) >= 1:
 		await bot.get_channel(metaOut_TEST).send('Restarting')
 	else:
 		await bot.get_channel(metaOut).send('Restarting')
@@ -161,7 +161,7 @@ async def metadata():
 	metaEmbed.set_thumbnail(url="attachment://cover.png")
 	metaEmbed.set_footer(text=tag.album + "\n" +  str(tag.samplerate) + "Hz | " + str(int(tag.bitrate)) + " kbps | " + musictype)
 
-	if mode != 1:
+	if int(mode) >= 1:
 		await bot.get_channel(metaOut_TEST).send(file=file, embed=metaEmbed)
 	else:
 		await bot.get_channel(metaOut).send(file=file, embed=metaEmbed)
