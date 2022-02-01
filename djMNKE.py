@@ -169,7 +169,7 @@ async def metadata():
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game(str(track['title']) + ' - ' + str(track['artist'])))
 
 @bot.command()
-@commands.has_any_role('Admin', 'Mod', 'DJ')
+@commands.has_any_role('Admin', 'Mod')
 async def play(ctx): #Allows the above on_ready call to be used on command (like if you do mn!stop)
 	global targetVoice
 	if not ctx.author.voice:
@@ -179,7 +179,7 @@ async def play(ctx): #Allows the above on_ready call to be used on command (like
 		await player()
 
 @bot.command()
-@commands.has_any_role('Admin', 'Mod', 'DJ')
+@commands.has_any_role('Admin', 'Mod')
 async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
 	if ctx.voice_client: # If the bot is in a voice channel
 		if os.path.exists("Metadata/currentlyplaying.txt"):
