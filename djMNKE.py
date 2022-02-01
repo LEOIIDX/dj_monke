@@ -208,8 +208,8 @@ async def help(ctx):
 
 	helpEmbed.set_author(name='DJ MONKE Help')
 	helpEmbed.set_thumbnail(url='attachment://cover.png')
-	helpEmbed.add_field(name='play', value='mn!play || Starts playback (Only available to DJ role)', inline=False)
-	helpEmbed.add_field(name='stop', value='mn!stop || Stops playback (Only available to DJ role)', inline=False)
+	helpEmbed.add_field(name='play', value='mn!play || Starts playback (Only available to Admin)', inline=False)
+	helpEmbed.add_field(name='stop', value='mn!stop || Stops playback (Only available to Admin)', inline=False)
 	helpEmbed.add_field(name='skip', value='mn!skip || Skips the current song (Only avialible to DJ role', inline=False)
 
 	await ctx.channel.send(file=file, embed = helpEmbed)
