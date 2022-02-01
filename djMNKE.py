@@ -39,23 +39,39 @@ intents.members = True
 intents.emojis = True
 intents.reactions = True
 
+os.system('clear')
+
 print('DJ Monke Bot\n')
 
-bot = commands.Bot(command_prefix='mn!',intents=intents)
+mode = input('Select Mode\n(0) Normal\n(1) Debug\n')
+
+if mode == 0:
+	bot = commands.Bot(command_prefix='mn!',intents=intents)
+else:
+	bot = commands.Bot(command_prefix='mnt!',intents=intents)
 
 bot.remove_command('help')
+
+global metaOut, metaOut_TEST
 
 metaOut_TEST = 841586692640735242
 metaOut = 936204500434296883
 
-async def endbot(): #exits and cleans up after bot is done or forcibly exited
+@bot.event
+async def on_ready():
+	global stopStatus
+	stopStatus = 0
+	print('Ready!')
+	os.system('cp cover.png Metadata/cover.png')
+
+async def endbot(vc): #exits and cleans up after bot is done or forcibly exited
 	if os.path.exists("Metadata/currentlyplaying.txt"):
   		os.remove("Metadata/currentlyplaying.txt")
 	if os.path.exists("Metadata/cover.png"):
   		os.remove("Metadata/cover.png")
 
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game('Nothing'))
-	await channel.disconnect()
+	await vc.disconnect()
 
 	await player()
 
@@ -93,6 +109,11 @@ async def player():
 		await currentlyplaying("play")
 		bigmusiclist.remove(rand)
 
+	if mode == 1:
+		await bot.get_channel(metaOut_TEST).send('Restarting')
+	else:
+		await bot.get_channel(metaOut).send('Restarting')
+	
 	await endbot(vc)
 
 async def metadata():
@@ -132,7 +153,7 @@ async def metadata():
 	tag = TinyTag.get(str(current[0]))
 
 	#? New random phrase list? Just using a few from iidx bot command right now -zep
-	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "IIDX OF THE NEW CENTURY", "THE PRIMARY VIVID IIDX", "JEWEL SHOWER", "Break the Future", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!", "Blaze through the resort party!", "FEAR THE SAFARI", "Your mom calls me an animal."]
+	TitleList = ["The next respect", "The escaping of the music beat.", "WELCOME TO THE CYBER-beat-NATION", "TRIP THE DEEP", "IIDX OF THE NEW CENTURY", "THE PRIMARY VIVID IIDX", "JEWEL SHOWER", "Break the Future", "Revolutionary Energetic Diversification", "Just Got Splash Beats!", "You're the DJ of this gig!", "Are You Ready Come on! It's Party Time!", "Blaze through the resort party!", "FEAR THE SAFARI", "Your mom calls me an animal.", "STREAM RIDING.", "This brand-new hour lets you cast and share your beat! Have a GREAT \"CastHour\" !!", "Go over with glaring sounds!", "Ride the sound flux! Record line of \"pleasure\"!", "This sound, this is the shinoBUZZ world", "Every day is the first station to shine yourself", "Next Link Various Tunes Change the World [ TRI ] For The Future !!!", "Lovely × Drive = New Lincle.", "The echo of sound, the shine of light.", "Super Sparkling Crown and Butterflies", "Do not pull the \"trigger\". Beat the \"war\"", "The ultimate system beatmania deluxe version."]
 
 	metaEmbed = discord.Embed(title=tag.title, description=tag.artist, color= discord.Color.from_rgb(red, green, blue))
 	metaEmbed.set_author(name="\"" + random.choice(TitleList) + "\"", icon_url="https://i.imgur.com/4T55IR4.png")
@@ -140,16 +161,12 @@ async def metadata():
 	metaEmbed.set_thumbnail(url="attachment://cover.png")
 	metaEmbed.set_footer(text=tag.album + "\n" +  str(tag.samplerate) + "Hz | " + str(int(tag.bitrate)) + " kbps | " + musictype)
 
-	await bot.get_channel(metaOut).send(file=file, embed=metaEmbed)
+	if mode != 1:
+		await bot.get_channel(metaOut_TEST).send(file=file, embed=metaEmbed)
+	else:
+		await bot.get_channel(metaOut).send(file=file, embed=metaEmbed)
 
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game(str(track['title']) + ' - ' + str(track['artist'])))
-
-@bot.event
-async def on_ready():
-	global stopStatus
-	stopStatus = 0
-	print('Ready!')
-	os.system('cp cover.png Metadata/cover.png')
 
 @bot.command()
 @commands.has_any_role('Admin', 'Mod', 'DJ')
@@ -162,10 +179,6 @@ async def play(ctx): #Allows the above on_ready call to be used on command (like
 		await player()
 
 @bot.command()
-async def info(ctx):
-	await metadata()
-
-@bot.command()
 @commands.has_any_role('Admin', 'Mod', 'DJ')
 async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
 	if ctx.voice_client: # If the bot is in a voice channel
@@ -174,15 +187,19 @@ async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
 		if os.path.exists("Metadata/cover.png"):
 	  		os.remove("Metadata/cover.png")
 		await ctx.voice_client.disconnect()
-		os.system("clear")
 		os.execv(sys.executable, ['python'] + sys.argv)
 	else:
 		await ctx.send("I'm not in a voice channel yet")
 
-#this is a placeholder, I have no idea how to make a skip function with current setup
+#Literally just kills the ffmpeg process. large brain af - leo
 @bot.command()
+@commands.has_any_role('Admin', 'Mod', 'DJ')
 async def skip(ctx):
-	await ctx.channel.send('I dont do anything yet haha')
+	if ctx.voice_client:
+		os.system('killall ffmpeg')
+		await ctx.channel.send('Song Skipped')
+	else:
+		await ctx.send("I'm not in a voice channel yet")
 
 @bot.command()
 async def help(ctx):
@@ -193,7 +210,7 @@ async def help(ctx):
 	helpEmbed.set_thumbnail(url='attachment://cover.png')
 	helpEmbed.add_field(name='play', value='mn!play || Starts playback (Only available to DJ role)', inline=False)
 	helpEmbed.add_field(name='stop', value='mn!stop || Stops playback (Only available to DJ role)', inline=False)
-	helpEmbed.add_field(name='info', value='mn!info || Prints out the metadata of the current track', inline=False)
+	helpEmbed.add_field(name='skip', value='mn!skip || Skips the current song (Only avialible to DJ role', inline=False)
 
 	await ctx.channel.send(file=file, embed = helpEmbed)
 
