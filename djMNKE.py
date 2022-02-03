@@ -4,9 +4,9 @@ By: Nanahira Monke Kanade Dev
 
 Internet Radio Stream Bot
 
-TODO List
-#TODO Create a base playlist (ill take care of that - leo)
-#TODO Create a debug functionality
+#TODO Create Alternative playlists
+
+#! Strange bug - playback inexplicably stops but metadata keeps printing
 '''
 import os
 import discord
@@ -43,7 +43,7 @@ os.system('clear')
 
 print('DJ Monke Bot\n')
 
-mode = input('Select Mode\n(0) Normal\n(1) Debug\n')
+mode = 0
 
 if int(mode) >= 1:
 	bot = commands.Bot(command_prefix='mnt!',intents=intents)
@@ -169,7 +169,7 @@ async def metadata():
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game(str(track['title']) + ' - ' + str(track['artist'])))
 
 @bot.command()
-@commands.has_any_role('Admin', 'Mod')
+@commands.has_any_role('Admin', 'Mod', 'DJ')
 async def play(ctx): #Allows the above on_ready call to be used on command (like if you do mn!stop)
 	global targetVoice
 	if not ctx.author.voice:
