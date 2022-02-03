@@ -43,7 +43,7 @@ os.system('clear')
 
 print('DJ Monke Bot\n')
 
-mode = 0
+mode = 1
 
 if int(mode) >= 1:
 	bot = commands.Bot(command_prefix='mnt!',intents=intents)
@@ -79,7 +79,7 @@ async def player():
 	vc = await bot.get_channel(targetVoice).connect()
 
 	#Counts the amount of files in the Music directory
-	bigmusiclist = os.listdir("Music")
+	bigmusiclist = os.listdir("Music/" + directory)
 	Counter = 0
 	for i in bigmusiclist:
 		if i:
@@ -96,9 +96,9 @@ async def player():
 
 	#How the next track is picked and played
 	async def resetplay(check):
-		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Music/" + rand))
+		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="Music/" + directory + "/" + rand))
 		with open("Metadata/currentlyplaying.txt", "w", encoding="utf8") as f: 
-			f.write("Music/" + rand)
+			f.write("Music/" + directory + "/" + rand)
 		os.system('cp cover.png Metadata/cover.png')
 		await metadata()
 	
@@ -170,8 +170,10 @@ async def metadata():
 
 @bot.command()
 @commands.has_any_role('Admin', 'Mod', 'DJ')
-async def play(ctx): #Allows the above on_ready call to be used on command (like if you do mn!stop)
-	global targetVoice
+async def play(ctx, musicDir): #Allows the above on_ready call to be used on command (like if you do mn!stop)
+	global targetVoice, directory
+	directory = str(musicDir)
+
 	if not ctx.author.voice:
 		await ctx.channel.send('Please join a Voice Channel.')
 	else:
@@ -208,10 +210,23 @@ async def help(ctx):
 
 	helpEmbed.set_author(name='DJ MONKE Help')
 	helpEmbed.set_thumbnail(url='attachment://cover.png')
-	helpEmbed.add_field(name='play', value='mn!play || Starts playback (Only available to Admin)', inline=False)
+	helpEmbed.add_field(name='play', value='mn!play [playlist] || Starts playback on specified playlist (Only available to DJ)', inline=False)
 	helpEmbed.add_field(name='stop', value='mn!stop || Stops playback (Only available to Admin)', inline=False)
-	helpEmbed.add_field(name='skip', value='mn!skip || Skips the current song (Only avialible to DJ role', inline=False)
+	helpEmbed.add_field(name='skip', value='mn!skip || Skips the current song (Only available to DJ role)', inline=False)
+	helpEmbed.add_field(name='playlists', value='mn!playlists || Lists availible playlists', inline=False)
 
 	await ctx.channel.send(file=file, embed = helpEmbed)
+
+@bot.command()
+async def playlists(ctx):
+	playEmbed = discord.Embed()
+	file = discord.File('cover.png', filename='cover.png')
+
+	playEmbed.set_author(name='DJ MONKE Playlists')
+	playEmbed.set_thumbnail(url='attachment://cover.png')
+	playEmbed.add_field(name='main', value='beatmania IIDX, Sound Voltex, and DanceDanceRevolution music.', inline=False)
+	playEmbed.add_field(name='tanoc', value='HARDCORE TANO*C and other usual contributors', inline=False)
+
+	await ctx.channel.send(file=file, embed = playEmbed)
 
 bot.run(TOKEN)
