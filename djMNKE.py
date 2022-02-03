@@ -43,7 +43,7 @@ os.system('clear')
 
 print('DJ Monke Bot\n')
 
-mode = 1
+mode = 0
 
 if int(mode) >= 1:
 	bot = commands.Bot(command_prefix='mnt!',intents=intents)
@@ -181,7 +181,7 @@ async def play(ctx, musicDir): #Allows the above on_ready call to be used on com
 		await player()
 
 @bot.command()
-@commands.has_any_role('Admin', 'Mod')
+@commands.has_any_role('Admin', 'Mod', 'DJ')
 async def stop(ctx): #*This command will throw out a bunch of errors, too bad!
 	if ctx.voice_client: # If the bot is in a voice channel
 		if os.path.exists("Metadata/currentlyplaying.txt"):
@@ -211,8 +211,8 @@ async def help(ctx):
 	helpEmbed.set_author(name='DJ MONKE Help')
 	helpEmbed.set_thumbnail(url='attachment://cover.png')
 	helpEmbed.add_field(name='play', value='mn!play [playlist] || Starts playback on specified playlist (Only available to DJ)', inline=False)
-	helpEmbed.add_field(name='stop', value='mn!stop || Stops playback (Only available to Admin)', inline=False)
-	helpEmbed.add_field(name='skip', value='mn!skip || Skips the current song (Only available to DJ role)', inline=False)
+	helpEmbed.add_field(name='stop', value='mn!stop || Stops playback (Only available to DJ)', inline=False)
+	helpEmbed.add_field(name='skip', value='mn!skip || Skips the current song (Only available to DJ)', inline=False)
 	helpEmbed.add_field(name='playlists', value='mn!playlists || Lists availible playlists', inline=False)
 
 	await ctx.channel.send(file=file, embed = helpEmbed)
