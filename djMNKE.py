@@ -172,10 +172,21 @@ async def metadata():
 @commands.has_any_role('Admin', 'Mod', 'DJ')
 async def play(ctx, musicDir): #Allows the above on_ready call to be used on command (like if you do mn!stop)
 	global targetVoice, directory
+	directCheck = 0
 	directory = str(musicDir)
+	directoryList = os.listdir("Music/")
+
+	for item in directoryList:
+		if item == directory:
+			directCheck = 1
 
 	if not ctx.author.voice:
 		await ctx.channel.send('Please join a Voice Channel.')
+		return
+
+	if directCheck != 1:
+		await ctx.channel.send('Playlist name not valid.')
+		return
 	else:
 		targetVoice = ctx.author.voice.channel.id
 		await player()
@@ -226,7 +237,13 @@ async def playlists(ctx):
 	playEmbed.set_thumbnail(url='attachment://cover.png')
 	playEmbed.add_field(name='main', value='beatmania IIDX, Sound Voltex, and DanceDanceRevolution music.', inline=False)
 	playEmbed.add_field(name='tanoc', value='HARDCORE TANO*C and other usual contributors', inline=False)
+	playEmbed.add_field(name='nanahira', value='Nanahira Music from various sources.', inline=False)
 
 	await ctx.channel.send(file=file, embed = playEmbed)
+
+@bot.command()
+async def test(ctx):
+	directoryList = os.listdir("Music/")
+	print(directoryList)
 
 bot.run(TOKEN)
