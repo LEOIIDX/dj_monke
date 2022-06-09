@@ -35,6 +35,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 #intents
 intents = discord.Intents.default()
+intents.message_content = True
 intents.members = True
 intents.emojis = True
 intents.reactions = True
